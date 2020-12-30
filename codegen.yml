@@ -1,0 +1,19 @@
+overwrite: true
+schema: "https://shoptown.lk/graphql"
+documents: "src/graphql/**/*.ts"
+generates:
+  src/generated/graphql.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      avoidOptionals: true
+      dedupeOperationSuffix: true
+      immutableTypes: true
+      preResolveTypes: true
+      nonOptionalTypename: true
+      noNamespaces: true
+      constEnums: false
+      strict: true
+      declarationKind: 'interface'
