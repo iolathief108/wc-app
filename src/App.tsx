@@ -24,14 +24,15 @@ import Colors from './styles/Colors'
 import {RootBottomTabParamList, RootStackParamList} from './types'
 
 
-
 const BottomTab = createMaterialBottomTabNavigator<RootBottomTabParamList>()
 const Stack = createStackNavigator<RootStackParamList>()
 
 const Htab = () => {
-  return <BottomTab.Navigator>
-
-
+  return <BottomTab.Navigator
+    activeColor={Colors.dark2}
+    inactiveColor={'#00000044'}
+    barStyle={{ backgroundColor: Colors.white }}
+  >
 
 
     <BottomTab.Screen
@@ -39,7 +40,7 @@ const Htab = () => {
       options={{
         title: 'Home',
         tabBarLabel: 'Home',
-        tabBarColor: Colors.dark2,
+        // tabBarColor: tabBarColor,
         tabBarIcon: ({color}) => (
           <Icon name="ios-home" color={color} size={26}/>
         ),
@@ -51,7 +52,7 @@ const Htab = () => {
       options={{
         title: 'Search',
         tabBarLabel: 'Search',
-        tabBarColor: Colors.dark2,
+        // tabBarColor: tabBarColor,
         tabBarIcon: ({color}) => (
           <Icon name="ios-search" color={color} size={26}/>
         ),
@@ -63,7 +64,7 @@ const Htab = () => {
       options={{
         title: 'Category',
         tabBarLabel: 'Category',
-        tabBarColor: Colors.dark2,
+        // tabBarColor: tabBarColor,
         tabBarIcon: ({color}) => (
           <Icon name="list" color={color} size={26}/>
         ),
@@ -75,7 +76,7 @@ const Htab = () => {
       options={{
         title: 'Profile',
         tabBarLabel: 'Profile',
-        tabBarColor: Colors.dark2,
+        // tabBarColor: tabBarColor,
         tabBarIcon: ({color}) => (
           <Icon name="ios-person" color={color} size={26}/>
         ),
@@ -85,7 +86,6 @@ const Htab = () => {
 
   </BottomTab.Navigator>
 }
-
 
 
 const App = () => {
@@ -100,7 +100,14 @@ const App = () => {
       {
         client ?
           <ApolloProvider client={client}>
-            <Stack.Navigator mode={'modal'} headerMode={'float'}>
+            <Stack.Navigator
+              mode={'modal'}
+              // headerMode={'float'}
+              screenOptions={{
+              headerStyle: {
+                elevation: 0
+              }
+            }}>
 
               <Stack.Screen name={'home'} options={{
                 title: 'SHOPTOWN',

@@ -16,7 +16,7 @@ export default function({navigation}) {
   const [loading, setLoading] = useState(true)
   const [successStatus, setSuccessStatus] = useState<boolean>(false)
   const [completed, setCompleted] = useState<boolean>(false)
-  const [checkFail, setCheckFail] = useState<[boolean, string]>([false, ''])
+  const [, setCheckFail] = useState<[boolean, string]>([false, ''])
   const [, setCheckedOut] = useUpdateDetect('checkoutUpdated')
   const [orderResultData, setOrderResultData] = useState<OrderOnStorageType>(null)
   const [isShippingInfoUpdated, setShippingInfoUpdated] = useUpdateDetect('shippingInfoUpdated')
@@ -128,8 +128,6 @@ export default function({navigation}) {
     if (orderData.input.shipping.address2.length < 2)
       return [false, 'address2 not valid']
 
-    // if empty true || if valid false
-    // console.log(orderData.input.shipping.email)
     if (orderData.input.shipping.email !== '' && orderData.input.shipping.email !== null)
       if (!validateEmail(orderData.input.shipping.email))
         return [false, 'email is not valid']

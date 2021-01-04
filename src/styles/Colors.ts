@@ -11,8 +11,33 @@ const Colors = {
   light1: '#E8F1F8',
   light2: '#AED3E5',
   link: dd1,
-  text1: '#000000ba',
+  text1: 'rgba(0,0,0,0.59)',
   textLight1: '#00000066',
-  title1: '#000000ca'
+  title1: 'rgba(0,0,0,0.68)',
+  textError: '#cd2020',
+  textGreen: '#12bf12',
+  textWarning: '#ff6f00'
 }
 export default Colors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

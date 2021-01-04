@@ -40,7 +40,7 @@ const ProductComp = ({product, navigation}: ProductProp) => {
                     <View style={{
                         paddingLeft: 4,
                         paddingRight: 4,
-                        paddingBottom: 2,
+                        paddingBottom: 0,
                     }}>
                         {
                             product.imageUri?
@@ -48,7 +48,7 @@ const ProductComp = ({product, navigation}: ProductProp) => {
                                     style={{
                                         height: windowWidth / 3 - 12,
                                         width: '100%',
-                                        borderRadius: 2,
+                                        // borderRadius: 2,
                                     }}
                                     source={{
                                         uri: product.imageUri,
@@ -58,11 +58,16 @@ const ProductComp = ({product, navigation}: ProductProp) => {
                     </View>
                     <View style={{paddingLeft: 4, paddingRight: 4}}>
                         <Text numberOfLines={1}
-                              style={{fontFamily: 'Roboto-Regular', fontSize: 13, color: Colors.title1}}>{product.name} adfasdfasdfsd</Text>
+                              style={{
+                                  fontFamily: 'Roboto-Regular',
+                                  fontSize: 12,
+                                  color: Colors.text1,
+                                  marginBottom: -2
+                              }}>{product.name} adfasdfasdfsd</Text>
                         <Text style={{
                             color: Colors.title1,
-                            fontFamily: 'Roboto-Medium',
-                            fontSize: 13,
+                            fontFamily: 'Roboto-Regular',
+                            fontSize: 12,
                         }}>{product.salePrice ? product.salePrice : product.regularPrice}</Text>
                     </View>
                 </View>

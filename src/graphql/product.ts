@@ -1,5 +1,6 @@
 import {gql} from '@apollo/client'
 
+// noinspection JSUnusedLocalSymbols
 const getProductQuantityQuery = gql`
 	query GetProductQuantity ($id: ID!){
 		__typename
@@ -11,6 +12,7 @@ const getProductQuantityQuery = gql`
 	}
 `
 
+// noinspection JSUnusedLocalSymbols
 const getProductDetail1Query = gql`
 	query GetProductDetail1 ($id: ID!){
 		__typename
@@ -27,20 +29,21 @@ const getProductDetail1Query = gql`
 	}
 `
 
+// noinspection JSUnusedLocalSymbols
 const getHomeProductQuery = gql`
 	query GetHomeProduct($first: Int!) {
-		products(where: {search: "", orderby: {order: ASC, field: DATE},tag: "hot products"}, after: "", first: $first) {
-			nodes {
-				name
-				databaseId
-				image {
-					sourceUrl(size: MEDIUM)
-				}
-				... on SimpleProduct {
-					regularPrice(format: RAW)
-					salePrice(format: RAW)
-				}
-			}
-		}
-	}
+    products(where: {search: "", orderby: {order: ASC, field: DATE},tag: "hot products"}, after: "", first: $first) {
+      nodes {
+        name
+        databaseId
+        image {
+          sourceUrl(size: MEDIUM)
+        }
+        ... on SimpleProduct {
+          regularPrice(format: FORMATTED)
+          salePrice(format: FORMATTED)
+        }
+      }
+    }
+  }
 `

@@ -1,15 +1,17 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react'
-import {RefreshControl, ScrollView, StyleSheet, Text, TouchableNativeFeedback, View} from 'react-native'
+import React, {useEffect, useState} from 'react'
+import {
+  StyleSheet,
+  Text,
+  TouchableNativeFeedback,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import Ionicons from 'react-native-vector-icons/dist/Ionicons'
 import SLIcon from 'react-native-vector-icons/dist/SimpleLineIcons'
-import {get_account_details, get_wishlist} from '../storage'
+import {get_account_details} from '../storage'
 import Colors from '../styles/Colors'
-import Fontawesome5Icon from 'react-native-vector-icons/dist/FontAwesome5'
 import FontawesomeIcon from 'react-native-vector-icons/dist/FontAwesome'
-import MaterialComIcon from 'react-native-vector-icons/dist/MaterialCommunityIcons'
-import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons'
 import {SpringScrollView} from 'react-native-spring-scrollview-quickedit'
-import { CommonLottieHeader } from 'react-native-spring-scrollview-quickedit/Customize'
 import { useUpdateDetect } from '../State'
 
 const styles = StyleSheet.create({
@@ -29,40 +31,41 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto-Bold',
     fontWeight: 'bold',
     fontSize: 18,
-    color: Colors.text1
+    color: Colors.title1
   },
   link_text_content: {
     fontFamily: 'Roboto-Regular',
-    color: Colors.textLight1
+    color: Colors.text1
   },
 })
 
-const iconColor = Colors.text1
-const iconArrowColor = Colors.text1
+const iconColor = Colors.title1
+const iconArrowColor = Colors.title1
 
 const App = ({navigation}) => {
-  const [name, setName] = useState<string>('Undefined')
-  const [isShippingInfoUpdated, setShippingInfoUpdated] = useUpdateDetect('shippingInfoUpdated')
+  const [name, setName] = useState<string|undefined>(undefined)
+  const [isShippingInfoUpdated, setIsShippingInfoUpdated] = useUpdateDetect('shippingInfoUpdated')
   useEffect(() => {
     get_account_details().then(value => {
       if (value && value.firstName)
         setName(value.firstName + ' ' + value.lastName)
-      else setName('Undefined')
-    })
-  }, )
-  // const [refreshing, setRefreshing] = useState(false)
-
-  const onRefresh = useCallback(() => {
-    // setRefreshing(true)
-    get_account_details().then(value => {
-      if (value && value.firstName) {
-        if (value.lastName)
-          setName(value.firstName + ' ' + value.lastName)
-        else
-          setName(value.firstName)
-      }
+      else setName(undefined)
+      setIsShippingInfoUpdated(false)
     })
   }, [isShippingInfoUpdated])
+  // const [refreshing, setRefreshing] = useState(false)
+
+  // const onRefresh = useCallback(() => {
+  //   // setRefreshing(true)
+  //   get_account_details().then(value => {
+  //     if (value && value.firstName) {
+  //       if (value.lastName)
+  //         setName(value.firstName + ' ' + value.lastName)
+  //       else
+  //         setName(value.firstName)
+  //     }
+  //   })
+  // }, [isShippingInfoUpdated])
   // let _scrollView = useRef()
 
   return (
@@ -71,16 +74,22 @@ const App = ({navigation}) => {
     >
       <View style={{
         alignItems: 'center',
-        marginBottom: 13
+        marginTop: 10,
       }}>
-        <Ionicons name="person-circle-outline" color={Colors.text1} size={150}/>
-        <Text style={{
-          fontSize: 30,
-          marginBottom: 20,
-          marginTop: -10,
-          fontFamily: 'Roboto-Medium',
-          color: Colors.text1
-        }}>{name}</Text>
+        <TouchableOpacity onPress={()=>navigation.navigate('address')}>
+          <Ionicons name="person-circle-outline" color={Colors.title1} size={150}/>
+        </TouchableOpacity>
+        {
+          name?
+            <Text style={{
+              fontSize: 30,
+              marginBottom: 20,
+              marginTop: -10,
+              fontFamily: 'Roboto-Medium',
+              color: Colors.text1
+            }}>{name}</Text>:
+            null
+        }
       </View>
 
 

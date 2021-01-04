@@ -3,7 +3,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableHighlight,
   TouchableOpacity,
   View,
 } from 'react-native'
@@ -56,9 +55,9 @@ const Email = ({navigation}) => {
   async function onSubmit() {
 
     if (validateEmail(form.email)){
-      
+
       let accDet = await get_account_details()
-  
+
       await set_account_details({
         address1: accDet ? accDet.address1 ? accDet.address1 : null : null,
         address2: accDet ? accDet.address2 ? accDet.address2 : null : null,
@@ -86,7 +85,7 @@ const Email = ({navigation}) => {
         <View style={styles.wrapper}>
 
           <Text style={styles.titleText}>Your Email</Text>
-          
+
           <TextInput
             onChangeText={text => setForm({email: text})}
             style={styles.input}

@@ -11,10 +11,10 @@ import {HomeSingleCategory} from '../types'
 import Loading from './Loading'
 import {getClient} from '../apollo'
 import {GetHomeProductDocument, GetHomeProductQuery, GetHomeProductQueryVariables} from '../generated/graphql'
-import {sleep} from '../global'
+import {formatPrice, sleep} from '../global'
 
 
-const Search = ({ navigation }) => {
+const Search = ({navigation}) => {
 
   const [search, setSearch] = useState('')
 
@@ -24,7 +24,7 @@ const Search = ({ navigation }) => {
       paddingTop: 12,
       paddingLeft: 9,
       paddingRight: 8,
-      paddingBottom: 13,
+      paddingBottom: 8,
       marginBottom: 3,
     }}>
       <View style={{
@@ -38,7 +38,7 @@ const Search = ({ navigation }) => {
             paddingTop: 3,
             paddingLeft: 10,
             paddingRight: 3,
-            borderRadius: 10,
+            // borderRadius: 10,
             flex: 1,
             marginRight: 10,
             fontFamily: 'Roboto-Regular',
@@ -80,7 +80,8 @@ const Search = ({ navigation }) => {
 }
 
 
-const Home = ({ navigation }) => {
+
+const Home = ({navigation}) => {
   const [sliderAds, setSliderAds] = useState<string[]>([])
   const [error, setError] = useState(false)
 
@@ -107,13 +108,19 @@ const Home = ({ navigation }) => {
         imageUri: value.image.sourceUrl,
         name: value.name,
         productId: value.databaseId,
-        regularPrice: 'regularPrice' in value ? value.regularPrice : 'null',
-        salePrice: 'salePrice' in value ? value.salePrice : null,
+        regularPrice: 'regularPrice' in value ?
+          formatPrice(value.regularPrice)
+          : 'null',
+        salePrice: 'salePrice' in value ?
+          formatPrice(value.salePrice)
+          : null,
       })))
       done += 1
 
     })
-      .catch(e => { error++ })
+      .catch(() => {
+        error++
+      })
 
 
     home_ads().then(value => {
@@ -123,7 +130,9 @@ const Home = ({ navigation }) => {
         setHomeCategories(value.categories)
       setHomeAdsLoading(false)
       done += 1
-    }).catch(e => { error++ })
+    }).catch(() => {
+      error++
+    })
 
     let count = 0
     while (true) {
@@ -164,7 +173,7 @@ const Home = ({ navigation }) => {
         // @ts-ignore
         refreshHeader={CommonLottieHeader}
       >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <Text style={{
             fontFamily: 'Roboto-Regular',
             fontSize: 20,
@@ -175,7 +184,7 @@ const Home = ({ navigation }) => {
     )
 
   if (homeAdsLoading || homeProductsLoading)
-    return <Loading />
+    return <Loading/>
 
   return (
     <SpringScrollView
@@ -187,55 +196,55 @@ const Home = ({ navigation }) => {
       <View style={{
         marginBottom: 10,
         // backgroundColor: '#fff'
-        }}>
-        <StatusBar barStyle={'dark-content'} backgroundColor={'#0000'} />
+      }}>
+        <StatusBar barStyle={'dark-content'} backgroundColor={'#0000'}/>
 
         {/* Search */}
-        <Search navigation={navigation} />
+        <Search navigation={navigation}/>
 
         {/* Slider */}
-        <HomeSlider images={sliderAds} />
+        <HomeSlider images={sliderAds}/>
 
         {/* Home Products Title */}
         <Text style={{
-          fontFamily: 'Roboto-Medium',
+          fontFamily: 'Roboto-Regular',
           marginLeft: 5,
           fontSize: 25,
           marginBottom: 12,
           textAlign: 'center',
-          color: '#000a',
+          color: Colors.title1,
         }}
         >
           Featured Collection
         </Text>
 
         {/* Home Products */}
-        <HomeProducts navigation={navigation} products={homeProducts} />
+        <HomeProducts navigation={navigation} products={homeProducts}/>
 
         {/* Home Categories Title */}
         <Text style={{
-          fontFamily: 'Roboto-Medium',
+          fontFamily: 'Roboto-Regular',
           marginLeft: 5,
           fontSize: 25,
           marginBottom: 12,
           marginTop: 25,
           textAlign: 'center',
-          color: '#000a',
+          color: Colors.title1,
         }}>
           Top Categories
         </Text>
 
         {/* Home Categories */}
-        <HomeCategories homeCategories={homeCategories} navigation={navigation} />
+        <HomeCategories homeCategories={homeCategories} navigation={navigation}/>
 
         {/* All category text */}
-        <TouchableOpacity onPress={()=>navigation.navigate('categories_tab')}>
+        <TouchableOpacity onPress={() => navigation.navigate('categories_tab')}>
           <Text style={{
             textAlign: 'center',
             fontFamily: 'Roboto-Regular',
             marginTop: 15,
             marginBottom: 10,
-            color: Colors.link
+            color: Colors.link,
           }}>
             All Category
           </Text>

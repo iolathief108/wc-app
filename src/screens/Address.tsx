@@ -1,5 +1,5 @@
 import React, {useEffect, useLayoutEffect, useState} from 'react'
-import {Dimensions, ScrollView, StyleSheet, Text, View} from 'react-native'
+import {ScrollView, StyleSheet, Text, View} from 'react-native'
 import {get_account_details, set_account_details} from '../storage'
 import {useUpdateDetect} from '../State'
 import {TouchableOpacity} from 'react-native-gesture-handler'
@@ -18,9 +18,8 @@ type Props = {
   navigation: ProfileScreenNavigationProp;
   route: ProfileScreenRouteProp
 };
-const {height, width} = Dimensions.get('window')
 let onS
-const Checkout = ({navigation, route}: Props) => {
+const Checkout = ({navigation}: Props) => {
   const [, setShippingInfoUpdated] = useUpdateDetect('shippingInfoUpdated')
   const [form, setForm] = useState({
     address1: '',
@@ -134,7 +133,7 @@ const Checkout = ({navigation, route}: Props) => {
           />
         </View>
 
-        
+
 
         <View style={styles.wrapper}>
         <Text style={styles.titleText}>Phone Number</Text>

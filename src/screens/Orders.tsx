@@ -2,7 +2,6 @@ import {
   ActivityIndicator,
   Alert,
   Image, Linking,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableNativeFeedback,

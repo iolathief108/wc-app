@@ -22,6 +22,7 @@ import {
 import Colors from '../styles/Colors'
 import { useUpdateDetect } from '../State'
 import Loading from './Loading'
+import FastImage from 'react-native-fast-image'
 
 const styles = StyleSheet.create({
   cart_item_container: {
@@ -116,7 +117,7 @@ function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQu
     }
   }
 
-  const Button = ({ text, grayed }: { text: string, grayed: boolean }) => {
+  const Button = ({ text, grayed, fontSize }: { text: string, grayed: boolean, fontSize?: number }) => {
     return (
       <View style={{
         // borderWidth: 2,
@@ -127,7 +128,7 @@ function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQu
         justifyContent: 'center',
         // borderColor: grayed ? '#00000022' : '#000',
       }}>
-        <Text style={{ fontFamily: 'Roboto-Regular', fontSize: 20, color: grayed ? '#00000022' : '#000' }}>{text}</Text>
+        <Text style={{ fontFamily: 'Roboto-Regular', fontSize: fontSize? fontSize:20, color: grayed ? '#00000022' : '#000' }}>{text}</Text>
       </View>
     )
   }
@@ -144,7 +145,7 @@ function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQu
       {
         qtyState !== 0 && !loading ?
           <TouchableOpacity onPress={onDecrease}>
-            <Button text='-' grayed={false} />
+            <Button text='-' grayed={false} fontSize={26} />
           </TouchableOpacity> : <Button text='-' grayed={true} />
       }
       <View style={{
@@ -255,8 +256,8 @@ class CartItem extends Component<CartItemProp, CartItemState> {
       <View style={styles.alpha2}>
 
         {/* Image */}
-        <Image style={{ flex: 1, height: 100, width: 100 }} resizeMode='contain'
-          source={{ uri: this.props.image_uri }}></Image>
+        <FastImage style={{ flex: 1, height: 100, width: 100 }} resizeMode='contain'
+          source={{ uri: this.props.image_uri }}></FastImage>
 
         {/* Qty Chagne */}
         <ChangeQuantityButton
@@ -375,7 +376,7 @@ export default function ({ navigation }) {
                 if (data) {
                   if (data?.cart.contents.nodes.length > 0) navigation.navigate('checkout')
                   else {
-                    ToastAndroid.show('You cannot checkout empty orders!', ToastAndroid.LONG)
+                    ToastAndroid.show('You cannot checkout empty cart!', ToastAndroid.LONG)
                   }
                 } else {
                   ToastAndroid.show('Whoops, something went wrong...', ToastAndroid.LONG)

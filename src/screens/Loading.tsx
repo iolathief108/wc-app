@@ -1,4 +1,4 @@
-import {ActivityIndicator, Text, View} from 'react-native'
+import {ActivityIndicator, View} from 'react-native'
 import React from 'react'
 import Colors from '../styles/Colors'
 
@@ -10,10 +10,9 @@ export default function() {
       justifyContent: 'center',
       alignItems: 'center',
     }}>
-      {/*<Text>Loading</Text>*/}
       <ActivityIndicator style={{
         marginTop: 65
-      }} color={Colors.dark1} animating={true} size={50} />
+      }} color={Colors.dark2} animating={true} size={50} />
     </View>
   )
 }

@@ -5,7 +5,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput, TouchableHighlight, TouchableHighlightComponent,
+  TextInput,
   TouchableNativeFeedback,
   View,
 } from 'react-native'
@@ -21,7 +21,7 @@ import {StackNavigationProp} from '@react-navigation/stack'
 import {RouteProp, CompositeNavigationProp} from '@react-navigation/native'
 import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { color } from 'react-native-reanimated'
+import {formatPrice} from '../global'
 
 
 type ProfileScreenRouteProp = RouteProp<RootBottomTabParamList, 'search_tab'>;
@@ -37,7 +37,7 @@ type Props = {
 };
 
 
-const {height, width} = Dimensions.get('window')
+const { width} = Dimensions.get('window')
 const itemWidth: number = (width - 24) / 2
 const query = gql`
 	query MyQuery($search: String!, $after: String!, $first: Int!, $CategoryId: Int) {
@@ -61,22 +61,23 @@ const query = gql`
 	}
 `
 
-const originalImageQuery = gql`
-	query MyQuery {
-		product(id: 16935, idType: DATABASE_ID) {
-			image {
-				sourceUrl(size: LARGE)
-			}
-			... on SimpleProduct {
-				galleryImages {
-					nodes {
-						sourceUrl(size: LARGE)
-					}
-				}
-			}
-		}
-	}
-`
+// const originalImageQuery = gql`
+// 	query MyQuery {
+// 		product(id: 16935, idType: DATABASE_ID) {
+// 			image {
+// 				sourceUrl(size: LARGE)
+// 			}
+// 			... on SimpleProduct {
+// 				galleryImages {
+// 					nodes {
+// 						sourceUrl(size: LARGE)
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// `
+
 
 
 export default function({navigation, route}: Props) {
@@ -96,7 +97,7 @@ export default function({navigation, route}: Props) {
 
   const {loading, error, data, fetchMore, refetch} = useQuery<productsDataTypes, productsVarTypes>(query, {
     variables,
-    fetchPolicy: 'network-only', 
+    fetchPolicy: 'network-only',
   })
 
   useEffect(() => {
@@ -111,7 +112,7 @@ export default function({navigation, route}: Props) {
           setCategoryMode(false)
       }else{
         setCategoryMode(true)
-        route.params.queryVariables.CategoryName ? 
+        route.params.queryVariables.CategoryName ?
           setSearchInputState(':'+route.params.queryVariables.CategoryName) :
           setSearchInputState(':')
       }
@@ -158,7 +159,7 @@ export default function({navigation, route}: Props) {
           marginBottom: 8,
           minWidth: itemWidth,
           maxWidth: itemWidth,
-          borderRadius: 4,
+          // borderRadius: 4,
           paddingBottom: 6,
           overflow: 'hidden',
         }}>
@@ -194,7 +195,7 @@ export default function({navigation, route}: Props) {
                 marginRight: 8,
                 fontSize: 15,
                 fontFamily: 'Roboto-Medium',
-                color: Colors.text1
+                color: Colors.title1
               }}>{item.salePrice ? item.salePrice : item.regularPrice}</Text>
 
               {/* Price Delete */}
@@ -231,7 +232,7 @@ export default function({navigation, route}: Props) {
     if (!loadMore) return null
     return (
       <ActivityIndicator
-        size="large" color="#00ff00" animating={true} style={{marginBottom: 20}}
+        size="large" color={Colors.dark2} animating={true} style={{marginBottom: 20}}
       />
     )
   }
@@ -261,7 +262,7 @@ export default function({navigation, route}: Props) {
             paddingLeft: 10,
             color: Colors.title1,
             paddingRight: 3,
-            borderRadius: 10,
+            // borderRadius: 10,
             flex: 1,
             marginRight: 10,
             fontFamily: 'Roboto-Regular',
@@ -269,7 +270,7 @@ export default function({navigation, route}: Props) {
           onChangeText={text => setSearchInputState(text)}
           onSubmitEditing={async () => {
             //start
-            
+
             if (!categoryMode) { //if search mode
 
               setEndReached(false)
@@ -289,7 +290,7 @@ export default function({navigation, route}: Props) {
           value={searchInputState}
         />
         <TouchableOpacity onPress={async () => {
-          //start 
+          //start
           setEndReached(false)
 
             if (categoryMode){
@@ -339,8 +340,10 @@ export default function({navigation, route}: Props) {
               for your search term.</Text>
           </View> :
           <FlatList
-            data={data === undefined ? [] : data.products.nodes.map(value => {
+            data={data? data.products.nodes.map(value => {
               let newValue = {...value}
+              newValue.regularPrice = formatPrice(value.regularPrice)
+              newValue.salePrice = formatPrice(value.salePrice)
               newValue['wished'] = false
               for (let i = 0; i < wishlistState.length; i++) {
                 if (wishlistState[i] === value.databaseId) {
@@ -349,7 +352,7 @@ export default function({navigation, route}: Props) {
                 }
               }
               return newValue
-            })}
+            }) : []}
             style={{
               paddingLeft: 3,//c
               paddingRight: 9,//b

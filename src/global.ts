@@ -14,7 +14,19 @@ export interface Product {
   salePrice?: number | undefined
 }
 
-
+export function formatPrice(priceString: string): string {
+  if (typeof priceString === 'string') {
+    priceString = priceString
+      .replace('රු ', '')
+      .replace('රු', '')
+      .replace(' Rs', '')
+      .replace('Rs', '')
+      .replace('.00', '')
+    return 'Rs.' + priceString
+  }
+  else
+    return priceString
+}
 
 export const auth = {
   user: 'ck_34cc1a697b9b74536b1fd2ffa80074b7c7d88b06',
