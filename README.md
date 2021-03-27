@@ -21,6 +21,7 @@ comment the `signingConfigs.release` while debugging in `android/app/build.gradl
 - make it only portrait mode
 - Variation in order placing
 - Loading logo
+- user specified custom fonts are reflecting to the app
 - Cart option other places
 - Variation setup both checkout and product page
 - Disable spring mode
@@ -36,3 +37,17 @@ comment the `signingConfigs.release` while debugging in `android/app/build.gradl
   - `getShortDescription` function
   - `ContactComp` function
 - contact screen
+- link assets | run  `npx react-native link`
+
+
+### Add Font
+- download the font and rename the font like below
+  - `Roboto` or `RobotoBlack` -> `Roboto-Black`
+  - `SFUIDisplayBold` -> `SFUIDisplay-Bold`
+  - Reason https://mehrankhandev.medium.com/ultimate-guide-to-use-custom-fonts-in-react-native-77fcdf859cf4
+- link assets | run `npx react-native link`
+- 
+
+### Remove Fonts
+- remove the fonts in `/assets` folder
+- and remove the fonts in `/android/app/src/main/assets/fonts`
