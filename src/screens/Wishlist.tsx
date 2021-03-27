@@ -119,7 +119,6 @@ const WishlistItem = ({productDbId, showStatus, onDelete}: wishlistItemProp) => 
   }
 
   useEffect(() => {
-    // console.log('use ef')
     get_product_detail(productDbId).then(value => {
       if (value !== null) {
         let reload1 = false
@@ -301,7 +300,6 @@ const WishlistItem = ({productDbId, showStatus, onDelete}: wishlistItemProp) => 
                 <View style={{
                   width: 45,
                   height: 31,
-                  // backgroundColor: '#666666',
                   borderRadius: 3,
                   alignItems: 'center',
                   justifyContent: 'center',

@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
-  Dimensions, Linking,
+  Dimensions,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,14 +13,22 @@ import React, {useEffect, useState} from 'react'
 import {gql, useMutation, useQuery} from '@apollo/client'
 import HTMLView from 'react-native-htmlview'
 import FastImage from 'react-native-fast-image'
-import {SliderBox} from 'react-native-image-slider-box'
-import {check_wishlist, get_wishlist, get_woo_session_from_storage, remove_whishlist, set_wishlist} from '../storage'
+import {
+  add_cart_item,
+  check_wishlist,
+  get_account_details,
+  get_app_id, get_cart_items,
+  remove_whishlist,
+  set_wishlist,
+} from '../storage'
 import Ionicons from 'react-native-vector-icons/dist/Ionicons'
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons'
 import Colors from '../styles/Colors'
 import Loading from './Loading'
 import {useUpdateDetect} from '../State'
 import Swiper from 'react-native-swiper'
+import {extractNumber} from '../global'
+import {websiteUrl} from '../config'
 
 const query = gql`
 	query MyQuery($dbId: ID!) {
@@ -28,6 +37,7 @@ const query = gql`
 				stockQuantity
 				shortDescription
 				description
+				uri
 				galleryImages {
 					nodes {
 						sourceUrl(size: GALLERY_MASONRY)
@@ -36,6 +46,20 @@ const query = gql`
 			}
 		}
 	}`
+
+type IMainQueryResultData = {
+  product: {
+    stockQuantity: number
+    shortDescription: string
+    description: string
+    uri: string
+    galleryImages: {
+      nodes: {
+        sourceUrl: string
+      }[]
+    }
+  }
+}
 
 const addToCartQuery = gql`
 	mutation MyMutation ($pId: Int!){
@@ -85,7 +109,7 @@ const descStyles = StyleSheet.create({
   },
 })
 
-function DescriptionComp({description}: {description: string}) {
+function DescriptionComp({description, uri}: {description: string, uri: string}) {
   return <View style={{
     paddingLeft: 10,
     paddingRight: 10,
@@ -94,11 +118,19 @@ function DescriptionComp({description}: {description: string}) {
       description !== '' ?
         <>
           <Text style={{fontSize: 20, fontWeight: 'bold'}}>Description</Text>
-          <HTMLView
-            value={description}
-            style={{marginTop: 15}}
-            stylesheet={descStyles}
-          />
+          <View style={{marginBottom: 40, marginTop: 15}}>
+            <TouchableOpacity onPress={
+              () => Linking.openURL(`${websiteUrl}${uri}`)
+            }><Text style={{
+              color: '#406cb5',
+              fontFamily: 'Roboto-Regular',
+            }}>Click for detailed description</Text></TouchableOpacity>
+          </View>
+          {/*<HTMLView*/}
+          {/*  value={description}*/}
+          {/*  style={{marginTop: 15}}*/}
+          {/*  stylesheet={descStyles}*/}
+          {/*/>*/}
         </> :
         null
     }
@@ -439,8 +471,8 @@ function BuyNowButton({isOutOfStock, isLoading, isAddToCardLoading, buyNowHandle
 
   return (
     <View style={styles.container}>
-      {/* Buy Now Button */}
 
+      {/* Buy Now Button */}
       <View style={styles.buyNowContainer}>
         <TouchableOpacity disabled={isAddToCardLoading} onPress={buyNowHandler}>
           {
@@ -479,17 +511,16 @@ export default function({route, navigation}) {
   const [addToCartBtnLoading, setAddToCartBtnLoading] = useState(false)
   const [, setWishlistUpdated] = useUpdateDetect('wishlistUpdated')
 
-  const {loading, error, data}: any = useQuery(query, {
+  const {loading, error, data} = useQuery<IMainQueryResultData>(query, {
     variables: {
       dbId: route.params.dbId,
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-and-network',//notodo: uncomment this I commented this thus I can get cache first result
   })
   const {loading: cartLoding, error: cartError, data: cartData, refetch: refetchCart} =
     useQuery<cartDataType>(cart, {
-      fetchPolicy: 'cache-and-network',
+      fetchPolicy: 'cache-and-network',//notodo: uncomment this I commented this thus I can get cache first result
     })
-
 
   useEffect(() => {
     navigation.setOptions({title: route.params.name ? route.params.name : 'product'})
@@ -521,39 +552,67 @@ export default function({route, navigation}) {
 
 // run addtocart mutation then run refetchcart to refresh the cart item count
   function addToCartHandler(buyNow = false) {
-    (
-      async () => {
-        setAddToCartBtnLoading(true)
-        setReducedStock(reducedStock + 1)
-        try {
-          const session = await get_woo_session_from_storage()
+    // (
+    //   async () => {
+    //     setAddToCartBtnLoading(true)
+    //     setReducedStock(reducedStock + 1)
+    //     try {
+    //       const session = await get_woo_session_from_storage()
+    //
+    //       if (session !== null) {
+    //         addToCart({
+    //           variables: {
+    //             pId: route.params.dbId,
+    //           },
+    //           context: {
+    //             headers: {
+    //               'woocommerce-session': `Session ${session}`,
+    //             },
+    //           },
+    //         }).then(() => {
+    //           setAddToCartBtnLoading(true)
+    //           refetchCart().then(() => {
+    //             setAddToCartBtnLoading(false)
+    //             if (buyNow)
+    //               navigation.navigate('cart')
+    //           })
+    //         })
+    //       } else {
+    //         setAddToCartBtnLoading(false)
+    //       }
+    //     } catch (e) {
+    //       setAddToCartBtnLoading(false)
+    //     }
+    //   }
+    // )()
+    (async () => {
+      setAddToCartBtnLoading(true)
+      setReducedStock(reducedStock + 1)
+      await add_cart_item({
+        product_name: route.params.name,
+        price: extractNumber(route.params.salePrice ? route.params.salePrice : route.params.regularPrice),
+        databaseId: route.params.dbId,
+        price_deleted: route.params.salePrice ? extractNumber(route.params.regularPrice) : null,
+        max_qty: data.product.stockQuantity,
+        image: route.params.mainImage,
+        qty: 1,
+      })
 
-          if (session !== null) {
-            addToCart({
-              variables: {
-                pId: route.params.dbId,
-              },
-              context: {
-                headers: {
-                  'woocommerce-session': `Session ${session}`,
-                },
-              },
-            }).then(() => {
-              setAddToCartBtnLoading(true)
-              refetchCart().then(() => {
-                setAddToCartBtnLoading(false)
-                if (buyNow)
-                  navigation.navigate('cart')
-              })
-            })
-          } else {
-            setAddToCartBtnLoading(false)
-          }
-        } catch (e) {
-          setAddToCartBtnLoading(false)
-        }
-      }
-    )()
+      setAddToCartBtnLoading(false)
+    })()
+  }
+
+  async function buyNowHandler() {
+    let databaseId = route.params.dbId
+    let appId = await get_app_id()
+    let account_detail = await get_account_details()
+    let url = undefined
+    if (!account_detail) {
+      url = `${websiteUrl}/cart/?products=${databaseId}_1&appId=${appId}`
+    } else {
+      url = `${websiteUrl}/cart/?products=${databaseId}_1&appId=${appId}&info=${encodeURI(JSON.stringify(account_detail))}`
+    }
+    Linking.openURL(url)
   }
 
   function getDescription() {
@@ -568,7 +627,6 @@ export default function({route, navigation}) {
         .replace(/(\r\n|\n|\r)/gm, '<br>')
       : '' : ''
   }
-
 
   if (loading || cartLoding) return <Loading/>
 
@@ -615,7 +673,7 @@ export default function({route, navigation}) {
         <ContactComp whatsappText={route.params.name + ' | ' + route.params.dbId + ''}/>
 
         {/* Description - static */}
-        <DescriptionComp description={getDescription()}/>
+        <DescriptionComp description={getDescription()} uri={data.product.uri}/>
         <View style={{
           marginBottom: 50,
         }}/>
@@ -623,12 +681,8 @@ export default function({route, navigation}) {
 
       {/* ADD_TO_CART BUY_NOW - action, Dynamic */}
       <BuyNowButton
-        addToCartHandler={() => {
-          addToCartHandler()
-        }}
-        buyNowHandler={() => {
-          addToCartHandler(true)
-        }}
+        addToCartHandler={addToCartHandler}
+        buyNowHandler={buyNowHandler}
         isAddToCardLoading={addToCartBtnLoading}
         isOutOfStock={!((getStockQty() !== null) && (getStockQty() !== 0))}
         isLoading={cartLoding || loading}

@@ -165,9 +165,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   input: {
-    // borderBottomWidth: 1,
-    // paddingBottom: 2,
-    // marginTop: -15
     height: 50,
     color: '#990'
   },

@@ -1,5 +1,6 @@
 import Axios from 'axios'
 import { HomeSingleCategory } from '../types';
+import {websiteUrl} from '../config'
 type data = {
   ads: string[];
   categories: HomeSingleCategory[];
@@ -16,11 +17,11 @@ Axios.request({
 const ads = async () => {
   const thing = await Axios({
     method: 'get',
-    url: 'https://shoptown.lk/app/home_ads.json',
+    url: `${websiteUrl}/app/home_ads.json`,
   })
-  
+
   let data:data = thing.data
-  
+
   return data
 }
 

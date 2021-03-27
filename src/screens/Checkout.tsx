@@ -1,15 +1,24 @@
-import {Alert, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View} from 'react-native'
+import {
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableNativeFeedback,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import React, {useEffect, useState} from 'react'
 import {useMutation} from '@apollo/client'
-import {get_account_details, OrderOnStorageType, set_order_id_to_storage} from '../storage'
+import {get_account_details, get_app_id, get_cart_items, OrderOnStorageType} from '../storage'
 import {CheckoutDocument, CheckoutMutation, CheckoutMutationVariables, CountriesEnum} from '../generated/graphql'
 import {validateEmail} from '../global'
-import moment from 'moment'
 import Colors from '../styles/Colors'
 import {useUpdateDetect} from '../State'
 import Loading from './Loading'
 import FontAwesome5 from 'react-native-vector-icons/dist/FontAwesome5'
 import Ionicons from 'react-native-vector-icons/dist/Ionicons'
+import {websiteUrl} from '../config'
 
 export default function({navigation}) {
 
@@ -157,33 +166,51 @@ export default function({navigation}) {
       return
     }
 
-    setLoading(true)
+    setCheckedOut(true)
+    // todo: if checkout success page redirected to the app set success=true
 
-    let value = await checkout()
-    if (value.data?.checkout.result) {
-      // successfull checkout
-      setCheckedOut(true)
-      let dd: OrderOnStorageType = {
-        subtotal: value.data.checkout.order.subtotal,
-        total: value.data.checkout.order.total,
-        order_id: value.data.checkout.order.databaseId,
-        date: moment()
-          .utcOffset('+05:30')
-          .format('DD MMM YYYY HH:mm:ss'),
-        lineItems: value.data.checkout.order.lineItems.nodes.map(value1 => ({
-          name: value1.product.name,
-          subtotal: value1.subtotal,
-          databaseId: value1.product.databaseId,
-          quantity: value1.quantity,
-        })),
-      }
-      setOrderResultData(dd)
-      await set_order_id_to_storage(dd)
-      setSuccessStatus(true)
-    } else
-      setSuccessStatus(false)
-    setCompleted(true)
-    setLoading(false)
+    let cartData = await get_cart_items()
+    let accountDetails = await get_account_details()
+    let appId = await get_app_id()
+    // /appId=adfasdfa&info=asdfsdf&products=3434_2,2323_1
+    let cart_url = 'products='
+    cartData.forEach((value,index) => cart_url = cart_url+`${value.databaseId}_${value.qty}${index === cartData.length-1?'':','}`)
+    let url
+    if (accountDetails){
+      url = `${websiteUrl}/cart/?appId=${appId}&info=${encodeURI(JSON.stringify(accountDetails))}&${cart_url}`
+    } else {
+      url = `${websiteUrl}/cart/?appId=${appId}&${cart_url}`
+    }
+
+    Linking.openURL(url).then(r => {})
+
+    // setLoading(true)
+
+    // let value = await checkout()
+    // if (value.data?.checkout.result) {
+    //   // successfull checkout
+    //   setCheckedOut(true)
+    //   let dd: OrderOnStorageType = {
+    //     subtotal: value.data.checkout.order.subtotal,
+    //     total: value.data.checkout.order.total,
+    //     order_id: value.data.checkout.order.databaseId,
+    //     date: moment()
+    //       .utcOffset('+05:30')
+    //       .format('DD MMM YYYY HH:mm:ss'),
+    //     lineItems: value.data.checkout.order.lineItems.nodes.map(value1 => ({
+    //       name: value1.product.name,
+    //       subtotal: value1.subtotal,
+    //       databaseId: value1.product.databaseId,
+    //       quantity: value1.quantity,
+    //     })),
+    //   }
+    //   setOrderResultData(dd)
+    //   await set_order_id_to_storage(dd)
+    //   setSuccessStatus(true)
+    // } else
+    //   setSuccessStatus(false)
+    // setCompleted(true)
+    // setLoading(false)
   }
 
 
@@ -312,7 +339,8 @@ export default function({navigation}) {
               </TouchableOpacity> */}
             </View>
             <View style={{paddingLeft: 5}}>
-              <Text onPress={() => navigation.navigate('email')} style={{marginBottom: 2, paddingRight: 20, color: Colors.link}}>
+              <Text onPress={() => navigation.navigate('email')}
+                    style={{marginBottom: 2, paddingRight: 20, color: Colors.link}}>
                 {
                   orderData.input.shipping.email ?
                     orderData.input.shipping.email :
@@ -348,6 +376,6 @@ const Styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontFamily: 'Roboto-Medium',
-    color: '#000c'
-  }
+    color: '#000c',
+  },
 })

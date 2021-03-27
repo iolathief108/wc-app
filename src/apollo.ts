@@ -1,10 +1,8 @@
 import 'react-native-gesture-handler'
-import {auth, set_woo_session, woo_session_global} from './global'
+import {set_woo_session, woo_session_global} from './global'
+import {websiteUrl} from './config'
 import {ApolloClient, ApolloLink, createHttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client'
-import base64 from 'react-native-base64'
 import {get_woo_session_from_storage, set_wsession_to_storage} from './storage'
-// import {persistCache, AsyncStorageWrapper} from 'apollo3-cache-persist'
-// import AsyncStorage from '@react-native-async-storage/async-storage'
 
 let woo_session_initialized2 = false
 let woo_session_initialized1 = false
@@ -118,7 +116,7 @@ const afterware = new ApolloLink((operation, forward) => {
 
 /* Apollo Client */
 const link = createHttpLink({
-  uri: 'https://shoptown.lk/graphql',
+  uri: `${websiteUrl}/graphql`,
   credentials: 'includes',
 })
 let client: ApolloClient<NormalizedCacheObject>
@@ -133,7 +131,7 @@ export const setup = async () => {
   client = new ApolloClient({
     cache,
     headers: {
-      Authorization: `Basic ${base64.encode(`${auth.user}:${auth.pass}`)}`,
+      // Authorization: `Basic ${base64.encode(`${auth.user}:${auth.pass}`)}`,
     },
     link: afterware.concat(middleware.concat(link)),
   })

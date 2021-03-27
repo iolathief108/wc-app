@@ -28,10 +28,7 @@ export function formatPrice(priceString: string): string {
     return priceString
 }
 
-export const auth = {
-  user: 'ck_34cc1a697b9b74536b1fd2ffa80074b7c7d88b06',
-  pass: 'cs_e57f6ad2c6bd6adafa18ec482302c6ee5beb7d4b',
-}
+
 
 export function getDefaultProduct(product: Product): Product {
   return {

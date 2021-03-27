@@ -74,12 +74,12 @@ export type productsVarTypes = {
 }
 
 export type AccountDetails = {
+  firstName: string
+  lastName: string
   address1: string
   address2: string
   city: string
-  firstName: string
   email: string
-  lastName: string
   mobileNumber: string
 }
 

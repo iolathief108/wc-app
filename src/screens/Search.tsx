@@ -18,18 +18,16 @@ import Colors from '../styles/Colors'
 import Ionicons from 'react-native-vector-icons/dist/Ionicons'
 import Loading from './Loading'
 import {StackNavigationProp} from '@react-navigation/stack'
-import {RouteProp, CompositeNavigationProp} from '@react-navigation/native'
+import {CompositeNavigationProp, RouteProp} from '@react-navigation/native'
 import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import {TouchableOpacity} from 'react-native-gesture-handler'
 import {formatPrice} from '../global'
 
 
 type ProfileScreenRouteProp = RouteProp<RootBottomTabParamList, 'search_tab'>;
 
-type ProfileScreenNavigationProp = CompositeNavigationProp<
-    BottomTabNavigationProp<RootBottomTabParamList, 'search_tab'>,
-  StackNavigationProp<RootStackParamList>
-  >
+type ProfileScreenNavigationProp = CompositeNavigationProp<BottomTabNavigationProp<RootBottomTabParamList, 'search_tab'>,
+  StackNavigationProp<RootStackParamList>>
 
 type Props = {
   navigation: ProfileScreenNavigationProp;
@@ -37,7 +35,7 @@ type Props = {
 };
 
 
-const { width} = Dimensions.get('window')
+const {width} = Dimensions.get('window')
 const itemWidth: number = (width - 24) / 2
 const query = gql`
 	query MyQuery($search: String!, $after: String!, $first: Int!, $CategoryId: Int) {
@@ -79,7 +77,6 @@ const query = gql`
 // `
 
 
-
 export default function({navigation, route}: Props) {
   const [searchInputState, setSearchInputState] = useState('')
   const [searchQueryState, setSearchQueryState] = useState('')
@@ -87,6 +84,7 @@ export default function({navigation, route}: Props) {
   const [loadMore, setLoadMore] = useState<boolean>(false)
   const [endReached, setEndReached] = useState<boolean>(false)
   const [categoryMode, setCategoryMode] = useState<boolean>(false)
+  // const [loadMoreRunning, setLoadMoreRunning] = useState<boolean>(false)
 
   let variables = route.params ? route.params.queryVariables : {
     search: searchQueryState,
@@ -97,23 +95,23 @@ export default function({navigation, route}: Props) {
 
   const {loading, error, data, fetchMore, refetch} = useQuery<productsDataTypes, productsVarTypes>(query, {
     variables,
-    fetchPolicy: 'network-only',
+    // fetchPolicy: 'cache-first',
   })
 
   useEffect(() => {
     get_wishlist().then(value => setWishlistState(value))
   }, [])
 
-  useEffect(()=>{
-    if (route.params){
-      if (!route.params.queryVariables.CategoryId){
-          setSearchInputState(route.params.queryVariables.search)
-          setSearchQueryState(route.params.queryVariables.search)
-          setCategoryMode(false)
-      }else{
+  useEffect(() => {
+    if (route.params) {
+      if (!route.params.queryVariables.CategoryId) {
+        setSearchInputState(route.params.queryVariables.search)
+        setSearchQueryState(route.params.queryVariables.search)
+        setCategoryMode(false)
+      } else {
         setCategoryMode(true)
         route.params.queryVariables.CategoryName ?
-          setSearchInputState(':'+route.params.queryVariables.CategoryName) :
+          setSearchInputState(':' + route.params.queryVariables.CategoryName) :
           setSearchInputState(':')
       }
     }
@@ -133,16 +131,18 @@ export default function({navigation, route}: Props) {
   }
 
   const handleLoadMore = () => {
+    if (loadMore) return
+    setLoadMore(true)
+
     if (data?.products.pageInfo.hasNextPage) {
-      if (loadMore) return
       setEndReached(false)
-      setLoadMore(true)
       variables.after = data?.products.pageInfo.endCursor ? data?.products.pageInfo.endCursor : ''
       variables.first = 15
       fetchMore({variables}).then(() => {
         setLoadMore(false)
       })
     } else {
+      setLoadMore(false)
       setEndReached(true)
     }
   }
@@ -179,7 +179,7 @@ export default function({navigation, route}: Props) {
                 marginTop: 3,
                 fontSize: 13,
                 fontFamily: 'Roboto-Regular',
-                color: Colors.title1
+                color: Colors.title1,
               }}
               numberOfLines={2}
             >{item.name}</Text>
@@ -195,7 +195,7 @@ export default function({navigation, route}: Props) {
                 marginRight: 8,
                 fontSize: 15,
                 fontFamily: 'Roboto-Medium',
-                color: Colors.title1
+                color: Colors.title1,
               }}>{item.salePrice ? item.salePrice : item.regularPrice}</Text>
 
               {/* Price Delete */}
@@ -274,7 +274,7 @@ export default function({navigation, route}: Props) {
             if (!categoryMode) { //if search mode
 
               setEndReached(false)
-              if (searchInputState !== searchQueryState){
+              if (searchInputState !== searchQueryState) {
                 setSearchQueryState(searchInputState)
                 await refetch({
                   search: searchInputState,
@@ -293,39 +293,39 @@ export default function({navigation, route}: Props) {
           //start
           setEndReached(false)
 
-            if (categoryMode){
-              setCategoryMode(false)
-              setSearchInputState('')
-              setSearchQueryState('')
+          if (categoryMode) {
+            setCategoryMode(false)
+            setSearchInputState('')
+            setSearchQueryState('')
+            await refetch({
+              search: '',
+              after: '',
+              first: 15,
+              CategoryId: null,
+            })
+
+          } else {
+            if (searchInputState !== searchQueryState) {
+              setSearchQueryState(searchInputState)
               await refetch({
-                search: '',
+                search: searchInputState,
                 after: '',
                 first: 15,
                 CategoryId: null,
               })
-
-            }else {
-              if (searchInputState !== searchQueryState){
-                setSearchQueryState(searchInputState)
-                await refetch({
-                  search: searchInputState,
-                  after: '',
-                  first: 15,
-                  CategoryId: null,
-                })
-              }
             }
+          }
           //end
         }}>
           <Text style={{
-              fontFamily: 'Roboto-Light',
-              color: Colors.text1,
-              fontSize: 16,
-            }}>
-              {
-                categoryMode? 'Clear':'Search'
-              }
-            </Text>
+            fontFamily: 'Roboto-Light',
+            color: Colors.text1,
+            fontSize: 16,
+          }}>
+            {
+              categoryMode ? 'Clear' : 'Search'
+            }
+          </Text>
           {/* <Text>Search</Text> */}
         </TouchableOpacity>
       </View>
@@ -340,7 +340,7 @@ export default function({navigation, route}: Props) {
               for your search term.</Text>
           </View> :
           <FlatList
-            data={data? data.products.nodes.map(value => {
+            data={data ? data.products.nodes.map(value => {
               let newValue = {...value}
               newValue.regularPrice = formatPrice(value.regularPrice)
               newValue.salePrice = formatPrice(value.salePrice)
@@ -369,8 +369,6 @@ export default function({navigation, route}: Props) {
             onEndReached={handleLoadMore}
           />
       }
-
-
     </>
   )
 }

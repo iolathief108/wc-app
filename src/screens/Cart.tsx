@@ -1,6 +1,4 @@
 import {
-  ActivityIndicator,
-  Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -10,19 +8,20 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import React, { Component, useCallback, useEffect, useState } from 'react'
+import React, {Component, useCallback, useEffect, useState} from 'react'
 import AntIcon from 'react-native-vector-icons/dist/MaterialIcons'
-import {
-  GetCartQuery,
-  SimpleProduct,
-  useGetCartQuery,
-  useRemoveFromCartMutation,
-  useUpdateCartMutation,
-} from '../generated/graphql'
 import Colors from '../styles/Colors'
-import { useUpdateDetect } from '../State'
+import {useUpdateDetect} from '../State'
 import Loading from './Loading'
 import FastImage from 'react-native-fast-image'
+import {
+  cartItemOnStorageType,
+  decrease_item_from_cart,
+  get_cart_items,
+  increase_item_from_cart,
+  remove_item_from_cart,
+  update_cart_items,
+} from '../storage'
 
 const styles = StyleSheet.create({
   cart_item_container: {
@@ -45,17 +44,22 @@ const styles = StyleSheet.create({
   },
 })
 
-
-function RemoveItemButton({ cart_item_key, refetch }) {
-  const [removeFromCartMutation, { data, loading, error }] = useRemoveFromCartMutation()
+function RemoveItemButton({databaseId, refetch}: {databaseId: number, refetch: Function}) {
+  // const [removeFromCartMutation, {data, loading, error}] = useRemoveFromCartMutation()
+  const [loading, setLoading] = useState(false)
 
   const removeItem = () => {
-    removeFromCartMutation({
-      variables: {
-        key: [cart_item_key],
-      },
-    }).then(r => {
+    // removeFromCartMutation({
+    //   variables: {
+    //     key: [databaseId],
+    //   },
+    // }).then(r => {
+    //   refetch()
+    // })
+    setLoading(true)
+    remove_item_from_cart(databaseId).then(value => {
       refetch()
+      setLoading(false)
     })
   }
 
@@ -65,7 +69,7 @@ function RemoveItemButton({ cart_item_key, refetch }) {
         flexDirection: 'row',
         alignItems: 'center',
       }}>
-        <AntIcon style={{ marginRight: 10 }} name="remove-shopping-cart" color={'#faf7fb'} size={15} />
+        <AntIcon style={{marginRight: 10}} name="remove-shopping-cart" color={'#faf7fb'} size={15}/>
         <Text style={{
           fontFamily: 'Roboto-Regular',
           fontSize: 12,
@@ -77,47 +81,54 @@ function RemoveItemButton({ cart_item_key, refetch }) {
 }
 
 type ChangeQuantityButtonProp = {
-  cart_item_key: string
+  databaseId: number
   qty: number
   totalQty: number
   refech: Function
 }
 
-function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQuantityButtonProp) {
+function ChangeQuantityButton({databaseId, qty, totalQty, refech}: ChangeQuantityButtonProp) {
   const [qtyState, setStateQty] = useState<number>(qty)
-  let [updateCart, { data, loading }] = useUpdateCartMutation()
+  // let [updateCart, {data, loading}] = useUpdateCartMutation()
+  const [loading, setLoading] = useState<boolean>(false)
 
   const onIncrease = async () => {
     if (qtyState < totalQty) {
-      await updateCart({
-        variables: {
-          items: [{
-            key: cart_item_key,
-            quantity: qtyState + 1,
-          }],
-        },
-      })
+      // await updateCart({
+      //   variables: {
+      //     items: [{
+      //       key: databaseId,
+      //       quantity: qtyState + 1,
+      //     }],
+      //   },
+      // })
+      setLoading(true)
+      await increase_item_from_cart(databaseId)
       setStateQty(qtyState + 1)
       refech()
+      setLoading(false)
     }
   }
 
   const onDecrease = async () => {
     if (qtyState !== 0) {
-      await updateCart({
-        variables: {
-          items: [{
-            key: cart_item_key,
-            quantity: qtyState - 1,
-          }],
-        },
-      })
+      // await updateCart({
+      //   variables: {
+      //     items: [{
+      //       key: databaseId,
+      //       quantity: qtyState - 1,
+      //     }],
+      //   },
+      // })
+      setLoading(true)
+      await decrease_item_from_cart(databaseId)
       setStateQty(qtyState - 1)
       refech()
+      setLoading(false)
     }
   }
 
-  const Button = ({ text, grayed, fontSize }: { text: string, grayed: boolean, fontSize?: number }) => {
+  const Button = ({text, grayed, fontSize}: {text: string, grayed: boolean, fontSize?: number}) => {
     return (
       <View style={{
         // borderWidth: 2,
@@ -128,7 +139,11 @@ function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQu
         justifyContent: 'center',
         // borderColor: grayed ? '#00000022' : '#000',
       }}>
-        <Text style={{ fontFamily: 'Roboto-Regular', fontSize: fontSize? fontSize:20, color: grayed ? '#00000022' : '#000' }}>{text}</Text>
+        <Text style={{
+          fontFamily: 'Roboto-Regular',
+          fontSize: fontSize ? fontSize : 20,
+          color: grayed ? '#00000022' : '#000',
+        }}>{text}</Text>
       </View>
     )
   }
@@ -143,10 +158,10 @@ function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQu
       marginTop: 15,
     }}>
       {
-        qtyState !== 0 && !loading ?
+        qty > 1 && !loading ?
           <TouchableOpacity onPress={onDecrease}>
-            <Button text='-' grayed={false} fontSize={26} />
-          </TouchableOpacity> : <Button text='-' grayed={true} />
+            <Button text='-' grayed={false} fontSize={26}/>
+          </TouchableOpacity> : <Button text='-' grayed={true}/>
       }
       <View style={{
         backgroundColor: '#fdfdfd',
@@ -155,14 +170,14 @@ function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQu
         paddingTop: 4,
         marginBottom: 4,
       }}>
-        <Text style={{ marginBottom: 0 }}>{qtyState}</Text>
+        <Text style={{marginBottom: 0}}>{qty}</Text>
       </View>
       {
         totalQty > qtyState && !loading ?
           <TouchableOpacity onPress={onIncrease}>
-            <Button text='+' grayed={false} />
+            <Button text='+' grayed={false}/>
           </TouchableOpacity> :
-          <Button text='+' grayed={true} />
+          <Button text='+' grayed={true}/>
       }
     </View>
   )
@@ -171,14 +186,14 @@ function ChangeQuantityButton({ cart_item_key, qty, totalQty, refech }: ChangeQu
 type CartItemProp = {
   name: string
   image_uri: string
-  subtotal: string
-  cart_item_key: string
+  subtotal: number
+  databaseId: number
   qty: number
   refetch: Function
   totalQty: number
 }
 type CartItemState = {
-  total: string
+  total: number
   qty: number
 }
 
@@ -214,7 +229,7 @@ class CartItem extends Component<CartItemProp, CartItemState> {
       <View style={styles.alpha1}>
 
         {/* Top */}
-        <View style={{ flex: 1 }}>
+        <View style={{flex: 1}}>
 
           {/* Title */}
           <Text
@@ -231,12 +246,12 @@ class CartItem extends Component<CartItemProp, CartItemState> {
             fontFamily: 'Roboto-Regular',
             fontSize: 13,
             marginTop: 10,
-            color: Colors.text1
-          }}>{this.state.total}</Text>
+            color: Colors.text1,
+          }}>{this.props.subtotal}</Text>
         </View>
 
         {/* Bottom*/}
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{flexDirection: 'row'}}>
           <View style={{
             marginTop: 20,
             backgroundColor: '#cc0029',
@@ -247,7 +262,7 @@ class CartItem extends Component<CartItemProp, CartItemState> {
             // width: 125,
             borderRadius: 2,
           }}>
-            <RemoveItemButton cart_item_key={this.props.cart_item_key} refetch={this.props.refetch} />
+            <RemoveItemButton databaseId={this.props.databaseId} refetch={this.props.refetch}/>
           </View>
         </View>
       </View>
@@ -256,13 +271,13 @@ class CartItem extends Component<CartItemProp, CartItemState> {
       <View style={styles.alpha2}>
 
         {/* Image */}
-        <FastImage style={{ flex: 1, height: 100, width: 100 }} resizeMode='contain'
-          source={{ uri: this.props.image_uri }}></FastImage>
+        <FastImage style={{flex: 1, height: 100, width: 100}} resizeMode='contain'
+                   source={{uri: this.props.image_uri}}></FastImage>
 
         {/* Qty Chagne */}
         <ChangeQuantityButton
-          cart_item_key={this.props.cart_item_key}
-          qty={this.state.qty}
+          databaseId={this.props.databaseId}
+          qty={this.props.qty}
           refech={this.props.refetch}
           totalQty={this.props.totalQty}
         />
@@ -272,82 +287,145 @@ class CartItem extends Component<CartItemProp, CartItemState> {
 
 }
 
-export default function ({ navigation }) {
+export default function({navigation}) {
 
   const [refreshing, setRefreshing] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const { loading, data, refetch, error } = useGetCartQuery({
-    fetchPolicy: 'cache-and-network',
-  })
+  type dataType = {
+    total: number
+    itemCount: number
+    cartItems: cartItemOnStorageType[]
+  }
+  const [data, setData] = useState<dataType>({total: 0, itemCount: 0, cartItems: []})
+  // const {loading, data, refetch, error} = useGetCartQuery({
+  //   fetchPolicy: 'cache-and-network',
+  // })
+
 
   const onRefresh = useCallback(() => {
-    refetch().then(() => {
+    (async () => {
+      setRefreshing(true)
+      if (await update_cart_items()) {
+        let cartItems = await get_cart_items()
+        let itemCount = 0
+        let total = 0
+        cartItems.forEach(value => {
+          itemCount += value.qty
+          total += (value.qty * value.price)
+        })
+        setData({total, itemCount, cartItems})
+      }
       setRefreshing(false)
-    })
-    setRefreshing(true)
+    })()
   }, [])
   const [isCheckoutUpdated, setCheckoutUpdated] = useUpdateDetect('checkoutUpdated')
 
   useEffect(() => {
-    if (isCheckoutUpdated) {
-      refetch().then(() => {
-        setRefreshing(false)
+    (async () => {
+      let cartItems = await get_cart_items()
+      let itemCount = 0
+      let total = 0
+      cartItems.forEach(value => {
+        itemCount += value.qty
+        total += (value.qty * value.price)
       })
-      setRefreshing(true)
-      setCheckoutUpdated(false)
-    }
-  }, [isCheckoutUpdated])
+      setData({total, itemCount, cartItems})
+    })()
+  }, [])
 
-  if (error)
-    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{
-        fontFamily: 'Roboto-Regular',
-        fontSize: 20,
-        color: Colors.dark1,
-      }}>Error! {error.message}</Text>
-    </View>
+  useEffect(() => {
+
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      // when cart is focused
+      if (isCheckoutUpdated) {
+        setRefreshing(true)
+        setCheckoutUpdated(false)
+        update_cart_items().then(async is_updated => {
+          setRefreshing(false)
+          if (is_updated) {
+            let new_data: dataType = {total: 0, itemCount: 0, cartItems: []}
+            let cartItems = await get_cart_items()
+            let itemCount = 0
+            let total = 0
+            cartItems.forEach(value => {
+              itemCount += value.qty
+              total += (value.qty * value.price)
+            })
+            setData({total, itemCount, cartItems})
+          }
+        })
+      }
+      // end focus
+    })
+    return unsubscribe
+  }, [navigation, isCheckoutUpdated])
+  /*
+  *
+  * */
+  const refetch = async () => {
+
+    let cartItems = await get_cart_items()
+    let itemCount = 0
+    let total = 0
+    cartItems.forEach(value => {
+      itemCount += value.qty
+      total += (value.qty * value.price)
+    })
+    setData({total, itemCount, cartItems})
+  }
+
+// if (error)
+//   return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+//     <Text style={{
+//       fontFamily: 'Roboto-Regular',
+//       fontSize: 20,
+//       color: Colors.dark1,
+//     }}>Error! {error.message}</Text>
+//   </View>
 
   return (
     <>
       <ScrollView
-        style={{ backgroundColor: '#f5f5f5' }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        style={{backgroundColor: '#f5f5f5'}}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}
       >
         <View style={{
           marginTop: 20,
-        }} />
+        }}/>
         {
           data || !loading ?
-            <Info navigation={navigation} /> : null
-
+            <Info navigation={navigation}/> : null
         }
         {
-          data?.cart.contents.nodes.length === 0 || !data ?
-            <View style={{ flex: 1, height: '100%', justifyContent: 'center', alignItems: 'center', marginTop: '30%' }}>
+          data.cartItems.length === 0 || !data ?
+            <View style={{flex: 1, height: '100%', justifyContent: 'center', alignItems: 'center', marginTop: '30%'}}>
               {
                 !data || loading ?
-                  <Loading /> :
+                  <Loading/> :
+                  //empty cart view
                   <>
-                    <Text style={{ fontFamily: 'Roboto-Bold', fontSize: 25, marginBottom: 10 }}>Cart is empty</Text>
-                    <Text style={{ fontFamily: 'Roboto-Regular', fontSize: 16, textAlign: 'center' }}>Looks like you have
+                    <Text style={{fontFamily: 'Roboto-Bold', fontSize: 25, marginBottom: 10}}>Cart is empty</Text>
+                    <Text style={{fontFamily: 'Roboto-Regular', fontSize: 16, textAlign: 'center'}}>Looks like you have
                       no items in your shopping cart.</Text>
-                    <Text style={{ fontFamily: 'Roboto-Regular', fontSize: 16, textAlign: 'center' }}>Click <Text
-                      style={{ color: '#009' }}
+                    <Text style={{fontFamily: 'Roboto-Regular', fontSize: 16, textAlign: 'center'}}>Click <Text
+                      style={{color: '#009'}}
                       onPress={() => navigation.navigate('search_tab')}>here</Text> to continue
                       shopping.</Text>
                   </>
               }
             </View> :
-            data?.cart.contents.nodes.map((item, index) =>
+            data.cartItems.map((item, index) =>
               <CartItem
-                name={item?.product.name}
-                qty={item?.quantity}
+                name={item.product_name}
+                qty={item.qty}
                 key={index}
-                image_uri={item?.product.image.sourceUrl}
-                cart_item_key={item?.key}
-                subtotal={item?.total}
+                image_uri={item.image}
+                databaseId={item.databaseId}
+                subtotal={item.qty * item.price}
                 refetch={refetch}
-                totalQty={(item.product as SimpleProduct).stockQuantity}
+                totalQty={item.max_qty}
               />,
             )
         }
@@ -357,7 +435,6 @@ export default function ({ navigation }) {
       {
         !!data || !loading ?
           <>
-
             <View style={{
               backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'flex-end',
               alignItems: 'center',
@@ -365,16 +442,20 @@ export default function ({ navigation }) {
               paddingBottom: 12.5,
               paddingRight: 8,
             }}>
+              {/* total */}
               <Text style={{
                 fontFamily: 'Roboto-Regular',
                 marginRight: 15,
-              }}>Total ({data?.cart.contents.itemCount}):
+              }}>Total ({data.itemCount}):
                 <Text style={{
                   fontFamily: 'Roboto-Bold',
-                }}> {data?.cart?.total}</Text></Text>
+                }}> {data.total}</Text>
+              </Text>
+
+              {/* checkout */}
               <TouchableNativeFeedback onPress={() => {
                 if (data) {
-                  if (data?.cart.contents.nodes.length > 0) navigation.navigate('checkout')
+                  if (data.cartItems.length > 0) navigation.navigate('checkout')
                   else {
                     ToastAndroid.show('You cannot checkout empty cart!', ToastAndroid.LONG)
                   }
@@ -392,7 +473,7 @@ export default function ({ navigation }) {
                   // marginTop: 10,
                   // marginRight: 10
                 }}>
-                  <Text style={{ color: '#000' }}>Checkout</Text>
+                  <Text style={{color: '#000'}}>Checkout</Text>
                 </View>
               </TouchableNativeFeedback>
             </View>
@@ -403,10 +484,7 @@ export default function ({ navigation }) {
   )
 }
 
-
-
-
-function Info({ navigation }) {
+function Info({navigation}) {
 
   const Style = StyleSheet.create({
     container: {
@@ -414,24 +492,24 @@ function Info({ navigation }) {
       paddingRight: 10,
       backgroundColor: '#fff',
       paddingTop: 15,
-      paddingBottom: 15
+      paddingBottom: 15,
     },
     text: {
       fontFamily: 'Roboto-Regular',
-      color: Colors.text1
+      color: Colors.text1,
     },
     link: {
       fontFamily: 'Roboto-Regular',
-      color: Colors.link
-    }
+      color: Colors.link,
+    },
   })
 
   return (
     <View style={Style.container}>
       <Text style={Style.text}>Available payment methods are COD, Bank Deposit. Please
-          <Text onPress={() => navigation.navigate('contact')} style={Style.link}>
+        <Text onPress={() => navigation.navigate('contact')} style={Style.link}>
           {' '}contact us
-          </Text>
+        </Text>
         {' '}for payment and other information.
       </Text>
     </View>
