@@ -13,7 +13,7 @@ export default function({order_cart_data}: {order_cart_data: IResObject}) {
           [
               {
                   text: 'Whatsapp',
-                  onPress: () => Linking.openURL(`whatsapp://send?text=My order No ${order_cart_data.order_id}&phone=${phoneNumber1}`),
+                  onPress: () => Linking.openURL(`whatsapp://send?text=My order No ${order_cart_data.order_id}&phone=94771363314`),
               },
           ],
           {cancelable: true},
