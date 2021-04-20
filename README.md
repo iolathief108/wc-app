@@ -46,8 +46,8 @@ comment the `signingConfigs.release` while debugging in `android/app/build.gradl
       - rn-re `ios/appname-other/` folder names
     - package name
       - `android/app/_BUCK` android_build_config android_resource package names (line 38 43)
-      - rn-re `android/app/main/androidManifest.xml`
-      - rn-re `android/build.gradle` line 132
+      - rn-re `android/app/src/main/androidManifest.xml`
+      - rn-re `android/app/build.gradle` line 132
       - rn-re `ios/podfile` line 5, 11, 26, 27, 29
 - run command `yarn android` to see if everything is OK (assume that url in the config is working)
 - if there is an error fix it and update the doc, if it working then continue
