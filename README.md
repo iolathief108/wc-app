@@ -37,15 +37,15 @@ comment the `signingConfigs.release` while debugging in `android/app/build.gradl
   - from folder you've copied previously copy the all the files in directory `/android/app/src/main/java/com.whatever.app_or_not/[files]` to curresponding directory
   - in `MainActivity.java` line 1 change package name and line 13 change app name
   - in `MainApplication.java` line 1 and 65 change package 
-  - then these are the all the things you have to change including what rn-rename will do, below rn-re are automatically done by `rn-rename`, change other than rn-rename does
+  - then these are the all the things you have to change including what rn-rename will do, below rn-re (beginning of the line) are automatically done by `rn-rename`, change other than rn-rename does
     - app name
-      - `App.tsx` home screen title property
+      - `src/App.tsx` home screen title property
       - `ios/zeemart/LaunchScreen.storyboard` line 25 property text
       - `android/app/src/main/res/values/strings.xml` line 2 app name
       - rn-re `setting.gradle` line 1
       - rn-re `ios/appname-other/` folder names
     - package name
-      - `android/app/_BUCK` android_build_config android_resource package names
+      - `android/app/_BUCK` android_build_config android_resource package names (line 38 43)
       - rn-re `android/app/main/androidManifest.xml`
       - rn-re `android/build.gradle` line 132
       - rn-re `ios/podfile` line 5, 11, 26, 27, 29
