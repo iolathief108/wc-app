@@ -77,3 +77,8 @@ run command  `npx react-native link`
   - remove the fonts in `/assets` folder
   - and remove the fonts in `/android/app/src/main/assets/fonts`
 
+### to upload to playstore
+- run command `keytool -genkeypair -v -storetype PKCS12 -keystore my-upload-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000` to  generate a file called `my-upload-key.keystore` also this command will prompt you to enter a password. move that file to the `/android/app/` directory.
+- edit file `android/gradle.properties` MYAPP_UPLOAD_STORE_PASSWORD, MYAPP_UPLOAD_KEY_PASSWORD replace ***** with the password you have entered (both)
+- file `android/app/build.gradle` change `signingConfig signingConfigs.debug` to `signingConfig signingConfigs.release` (lines around 178)
+- run command `cd android` `gradlew bundleRelease`
