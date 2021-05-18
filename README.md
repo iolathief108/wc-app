@@ -77,8 +77,9 @@ run command  `npx react-native link`
   - remove the fonts in `/assets` folder
   - and remove the fonts in `/android/app/src/main/assets/fonts`
 
-### to upload to playstore
-- run command `keytool -genkeypair -v -storetype PKCS12 -keystore my-upload-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000` to  generate a file called `my-upload-key.keystore` also this command will prompt you to enter a password. move that file to the `/android/app/` directory.
-- edit file `android/gradle.properties` MYAPP_UPLOAD_STORE_PASSWORD, MYAPP_UPLOAD_KEY_PASSWORD replace ***** with the password you have entered (both)
-- file `android/app/build.gradle` change `signingConfig signingConfigs.debug` to `signingConfig signingConfigs.release` (lines around 178)
-- run command `cd android` `gradlew bundleRelease`
+### Upload to playstore
+1. run command `keytool -genkeypair -v -storetype PKCS12 -keystore my-upload-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000` to  generate a file called `my-upload-key.keystore` also this command will prompt you to enter a password. move that file to the `/android/app/` directory.
+2. edit file `android/gradle.properties` MYAPP_UPLOAD_STORE_PASSWORD, MYAPP_UPLOAD_KEY_PASSWORD (KEYS) replace the value of this KEYS with the password you have entered (both)
+3. file `android/app/build.gradle` change `signingConfig signingConfigs.debug` to `signingConfig signingConfigs.release` (lines around 169)
+4. run command `cd android` `gradlew bundleRelease`
+5. explain - step 1 will create a unique file even if you are execute the same command with same password. which is this file is associated with the final release build(step 4). to update the app you will require some data which is file, alias and password. so keep those information safe. because this app is a template. so keep the datas(or files) that are needed to create the same app (possibly to update). may be the color configuration file, icons, main logo, description photos, screenshot, logo you have uploaded to the android dev console. 
